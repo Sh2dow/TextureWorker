@@ -13,6 +13,7 @@ using Pfim;
 using PfimImageFormat = Pfim.ImageFormat;
 using DrawingImageFormat = System.Drawing.Imaging.ImageFormat;
 using DirectXTexNet;
+using Microsoft.Win32;
 
 namespace TextureWorker
 {
@@ -26,6 +27,8 @@ namespace TextureWorker
         string[] filesPath_T = new string[] { };
         string[] newFilesPath = new string[] { };
         int starRenameIndex = 0;
+        string baseInputFolder = "";
+        string outputFolder = "";
         #endregion
 
         #region Initialization
@@ -42,6 +45,26 @@ namespace TextureWorker
             list.Add(newFile);
             filesPath = list.ToArray();
             return filesPath;
+        }
+
+        private string[] GetImageFilesFromDirectory(string directoryPath)
+        {
+            List<string> imageFiles = new List<string>();
+            string[] extensions = { ".jpg", ".jpeg", ".png", ".tiff", ".tif", ".wmf", ".emf", ".bmp", ".gif", ".ico", ".dds" };
+            
+            try
+            {
+                foreach (string ext in extensions)
+                {
+                    string[] files = Directory.GetFiles(directoryPath, "*" + ext, SearchOption.AllDirectories);
+                    imageFiles.AddRange(files);
+                }
+            }
+            catch (Exception)
+            {
+            }
+            
+            return imageFiles.ToArray();
         }
 
         private void UpdateListBox_T()
@@ -95,7 +118,19 @@ namespace TextureWorker
             newFilesPath = (string[])e.Data.GetData(DataFormats.FileDrop);
             foreach (var newFile in newFilesPath)
             {
-                if (!filesPath_T.Contains(newFile))
+                // Check if it's a directory
+                if (Directory.Exists(newFile))
+                {
+                    string[] imageFiles = GetImageFilesFromDirectory(newFile);
+                    foreach (var imageFile in imageFiles)
+                    {
+                        if (!filesPath_T.Contains(imageFile))
+                        {
+                            filesPath_T = AddToArray(imageFile, filesPath_T);
+                        }
+                    }
+                }
+                else if (!filesPath_T.Contains(newFile))
                 {
                     string ext = System.IO.Path.GetExtension(newFile);
                     if (ext == ".jpg" || ext == ".png" || ext == ".tiff" || ext == ".wmf" || ext == ".emf" || ext == ".bmp" || ext == ".gif" || ext == ".ico" || ext == ".dds")
@@ -106,8 +141,71 @@ namespace TextureWorker
                     }
                 }
             }
+            UpdateListBox_T();
+            My_PsText_T.Text = "";
         }
 
+        #endregion
+
+        #region Folder Selection
+        private void My_B_SelectFolder_Click(object sender, RoutedEventArgs e)
+        {
+            using (var dialog = new System.Windows.Forms.FolderBrowserDialog())
+            {
+                dialog.Description = "Select folder with images to convert";
+                dialog.ShowNewFolderButton = false;
+
+                if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                {
+                    string[] imageFiles = GetImageFilesFromDirectory(dialog.SelectedPath);
+                    foreach (var imageFile in imageFiles)
+                    {
+                        if (!filesPath_T.Contains(imageFile))
+                        {
+                            filesPath_T = AddToArray(imageFile, filesPath_T);
+                        }
+                    }
+                    UpdateListBox_T();
+                    baseInputFolder = dialog.SelectedPath;
+                    My_PsText_T.Text = $"Loaded {imageFiles.Length} images from folder";
+                }
+            }
+        }
+
+        private bool SelectOutputFolder(out string folderPath)
+        {
+            folderPath = "";
+            using (var dialog = new System.Windows.Forms.FolderBrowserDialog())
+            {
+                dialog.Description = "Select output folder for converted images";
+                dialog.ShowNewFolderButton = true;
+
+                if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                {
+                    folderPath = dialog.SelectedPath;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private string GetOutputPath(string originalFilePath, string outputBaseFolder, string subFolderName = "")
+        {
+            if (string.IsNullOrEmpty(baseInputFolder))
+            {
+                baseInputFolder = Path.GetDirectoryName(originalFilePath);
+            }
+
+            string relativePath = Path.GetRelativePath(baseInputFolder, Path.GetDirectoryName(originalFilePath));
+            string targetFolder = string.IsNullOrEmpty(subFolderName)
+                ? Path.Combine(outputBaseFolder, relativePath)
+                : Path.Combine(outputBaseFolder, subFolderName, relativePath);
+
+            Directory.CreateDirectory(targetFolder);
+
+            string fileName = Path.GetFileName(originalFilePath);
+            return Path.Combine(targetFolder, fileName);
+        }
         #endregion
 
         #region Image Conversion Features
@@ -128,6 +226,11 @@ namespace TextureWorker
         {
             if (filesPath_T.Length > 0)
             {
+                if (!SelectOutputFolder(out outputFolder))
+                {
+                    return;
+                }
+
                 foreach (var file in filesPath_T)
                 {
                     System.Drawing.Bitmap newImage = LoadBitmap(file);
@@ -147,47 +250,48 @@ namespace TextureWorker
                                 newImage = resized;
                             }
                         }
-                        string newImageFolder = System.IO.Path.GetDirectoryName(file);
+
                         string newImageName = System.IO.Path.GetFileNameWithoutExtension(file);
-                        DirectoryInfo di = Directory.CreateDirectory(newImageFolder + @"/Format Conversion");
-                        string saveImagePath = newImageFolder + @"/Format Conversion/" + newImageName + ext;
+                        string outputFilePath = GetOutputPath(file, outputFolder, "Format Conversion");
+                        outputFilePath = Path.ChangeExtension(outputFilePath, ext);
+
                         try
                         {
                             if (ext == ".jpg")
                             {
-                                newImage.Save(saveImagePath, DrawingImageFormat.Jpeg);
+                                newImage.Save(outputFilePath, DrawingImageFormat.Jpeg);
                             }
                             else if (ext == ".png")
                             {
-                                newImage.Save(saveImagePath, DrawingImageFormat.Png);
+                                newImage.Save(outputFilePath, DrawingImageFormat.Png);
                             }
                             else if (ext == ".dds")
                             {
-                                SaveDdsFromBitmap(saveImagePath, newImage);
+                                SaveDdsFromBitmap(outputFilePath, newImage);
                             }
                             else if (ext == ".tiff")
                             {
-                                newImage.Save(saveImagePath, DrawingImageFormat.Tiff);
+                                newImage.Save(outputFilePath, DrawingImageFormat.Tiff);
                             }
                             else if (ext == ".wmf")
                             {
-                                newImage.Save(saveImagePath, DrawingImageFormat.Wmf);
+                                newImage.Save(outputFilePath, DrawingImageFormat.Wmf);
                             }
                             else if (ext == ".emf")
                             {
-                                newImage.Save(saveImagePath, DrawingImageFormat.Emf);
+                                newImage.Save(outputFilePath, DrawingImageFormat.Emf);
                             }
                             else if (ext == ".bmp")
                             {
-                                newImage.Save(saveImagePath, DrawingImageFormat.Bmp);
+                                newImage.Save(outputFilePath, DrawingImageFormat.Bmp);
                             }
                             else if (ext == ".gif")
                             {
-                                newImage.Save(saveImagePath, DrawingImageFormat.Gif);
+                                newImage.Save(outputFilePath, DrawingImageFormat.Gif);
                             }
                             else if (ext == ".ico")
                             {
-                                using (FileStream FS = File.OpenWrite(saveImagePath))
+                                using (FileStream FS = File.OpenWrite(outputFilePath))
                                 {
                                     System.Drawing.Bitmap bmp = new System.Drawing.Bitmap(newImage, 256, 256);
                                     System.Drawing.Icon.FromHandle(bmp.GetHicon()).Save(FS);
@@ -203,6 +307,7 @@ namespace TextureWorker
                         newImage.Dispose();
                     }
                 }
+                MessageBox.Show($"Conversion complete! Output folder: {outputFolder}");
                 IniMyData_T();
             }
             else
@@ -217,12 +322,20 @@ namespace TextureWorker
             {
                 if (My_T_ParseX.Text != "" && My_T_ParseY.Text != "")
                 {
+                    if (!SelectOutputFolder(out outputFolder))
+                    {
+                        return;
+                    }
+
                     foreach (var file in filesPath_T)
                     {
                         System.Drawing.Bitmap bitmap = LoadBitmap(file);
                         System.Drawing.Bitmap bmp = new System.Drawing.Bitmap(bitmap, Int16.Parse(My_T_ParseX.Text), Int16.Parse(My_T_ParseY.Text));
-                        SaveImage("Resolution Conversion", file, bmp);
+                        SaveImageWithStructure(file, bmp, "Resolution Conversion");
+                        bmp.Dispose();
+                        bitmap.Dispose();
                     }
+                    MessageBox.Show($"Resolution conversion complete! Output folder: {outputFolder}");
                     IniMyData_T();
                 }
                 else
@@ -236,49 +349,47 @@ namespace TextureWorker
             }
         }
 
-        private void SaveImage(string createFolder, string file, System.Drawing.Bitmap bitMap)
+        private void SaveImageWithStructure(string file, System.Drawing.Bitmap bitMap, string subFolderName)
         {
             string ext = System.IO.Path.GetExtension(file);
-            string newImageFolder = System.IO.Path.GetDirectoryName(file);
-            string newImageName = System.IO.Path.GetFileNameWithoutExtension(file);
-            DirectoryInfo di = Directory.CreateDirectory(newImageFolder + @"/" + createFolder);
-            string saveImagePath = newImageFolder + @"/" + createFolder + @"/" + newImageName + ext;
+            string outputFilePath = GetOutputPath(file, outputFolder, subFolderName);
+
             if (ext == ".dds")
             {
-                SaveDdsFromBitmap(saveImagePath, bitMap);
+                SaveDdsFromBitmap(outputFilePath, bitMap);
                 return;
             }
             if (ext == ".jpg")
             {
-                bitMap.Save(saveImagePath, DrawingImageFormat.Jpeg);
+                bitMap.Save(outputFilePath, DrawingImageFormat.Jpeg);
             }
             else if (ext == ".png")
             {
-                bitMap.Save(saveImagePath, DrawingImageFormat.Png);
+                bitMap.Save(outputFilePath, DrawingImageFormat.Png);
             }
             else if (ext == ".tiff")
             {
-                bitMap.Save(saveImagePath, DrawingImageFormat.Tiff);
+                bitMap.Save(outputFilePath, DrawingImageFormat.Tiff);
             }
             else if (ext == ".wmf")
             {
-                bitMap.Save(saveImagePath, DrawingImageFormat.Wmf);
+                bitMap.Save(outputFilePath, DrawingImageFormat.Wmf);
             }
             else if (ext == ".emf")
             {
-                bitMap.Save(saveImagePath, DrawingImageFormat.Emf);
+                bitMap.Save(outputFilePath, DrawingImageFormat.Emf);
             }
             else if (ext == ".bmp")
             {
-                bitMap.Save(saveImagePath, DrawingImageFormat.Bmp);
+                bitMap.Save(outputFilePath, DrawingImageFormat.Bmp);
             }
             else if (ext == ".gif")
             {
-                bitMap.Save(saveImagePath, DrawingImageFormat.Gif);
+                bitMap.Save(outputFilePath, DrawingImageFormat.Gif);
             }
             else if (ext == ".ico")
             {
-                bitMap.Save(saveImagePath, DrawingImageFormat.Icon);
+                bitMap.Save(outputFilePath, DrawingImageFormat.Icon);
             }
         }
 
@@ -286,6 +397,11 @@ namespace TextureWorker
         {
             if (filesPath_T.Length > 0)
             {
+                if (!SelectOutputFolder(out outputFolder))
+                {
+                    return;
+                }
+
                 foreach (var file in filesPath_T)
                 {
                     System.Drawing.Bitmap bitmap = LoadBitmap(file);
@@ -299,8 +415,10 @@ namespace TextureWorker
                             bitmap.SetPixel(x, y, newColor);
                         }
                     }
-                    SaveImage("Grayscale Conversion", file, bitmap);
+                    SaveImageWithStructure(file, bitmap, "Grayscale Conversion");
+                    bitmap.Dispose();
                 }
+                MessageBox.Show($"Grayscale conversion complete! Output folder: {outputFolder}");
                 IniMyData_T();
             }
             else
@@ -313,6 +431,11 @@ namespace TextureWorker
         {
             if (filesPath_T.Length > 0)
             {
+                if (!SelectOutputFolder(out outputFolder))
+                {
+                    return;
+                }
+
                 int blurIntensity = (int)My_T_BlurSlider.Value;
                 foreach (var file in filesPath_T)
                 {
@@ -343,8 +466,10 @@ namespace TextureWorker
                             }
                         }
                     }
-                    SaveImage("Batch Blur", file, bitmap);
+                    SaveImageWithStructure(file, bitmap, "Batch Blur");
+                    bitmap.Dispose();
                 }
+                MessageBox.Show($"Blur conversion complete! Output folder: {outputFolder}");
                 IniMyData_T();
             }
             else
@@ -357,6 +482,11 @@ namespace TextureWorker
         {
             if (filesPath_T.Length > 0)
             {
+                if (!SelectOutputFolder(out outputFolder))
+                {
+                    return;
+                }
+
                 foreach (var file in filesPath_T)
                 {
                     System.Drawing.Bitmap bitmap = LoadBitmap(file);
@@ -388,8 +518,10 @@ namespace TextureWorker
                             bitmap.SetPixel(x, y, Color.FromArgb(alpha, red, green, blue));
                         }
                     }
-                    SaveImage("Batch Invert", file, bitmap);
+                    SaveImageWithStructure(file, bitmap, "Batch Invert");
+                    bitmap.Dispose();
                 }
+                MessageBox.Show($"Invert conversion complete! Output folder: {outputFolder}");
                 IniMyData_T();
             }
             else

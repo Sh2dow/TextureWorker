@@ -5,9 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TextureWorker"
         mc:Ignorable="d"
-        Title="TextureWorker" Height="500" Width="480" Background="#FF454545" ResizeMode="NoResize" Icon="icon.png">
-    <ScrollViewer HorizontalAlignment="Right" Height="500" VerticalAlignment="Top" Width="460">
-        <Grid x:Name="My_reTextrueGrid" HorizontalAlignment="Left" Height="500" VerticalAlignment="Top" Width="440"
+        Title="TextureWorker" Height="560" Width="480" Background="#FF454545" ResizeMode="NoResize" Icon="icon.png">
+    <ScrollViewer HorizontalAlignment="Right" Height="560" VerticalAlignment="Top" Width="460">
+        <Grid x:Name="My_reTextrueGrid" HorizontalAlignment="Left" Height="560" VerticalAlignment="Top" Width="440"
               Margin="0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="220" />
@@ -24,13 +24,17 @@
                        Text="Drag and drop images here" VerticalAlignment="Top" Margin="50,100,0,0" Width="120"
                        Foreground="#FFBFBFBF" TextAlignment="Center" />
 
+            <Button x:Name="My_B_SelectFolder" Grid.Column="0" Content="Select Folder" HorizontalAlignment="Left"
+                    VerticalAlignment="Top" Width="200" Height="25" Background="#FF595959" Foreground="#FFBFBFBF"
+                    Margin="10,195,0,0" Click="My_B_SelectFolder_Click" />
+
             <CheckBox x:Name="My_T_UseInputRes" Grid.Column="0" Content="Use input resolution"
-                      HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,225,0,0" Foreground="#FFBFBFBF"
+                      HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,250,0,0" Foreground="#FFBFBFBF"
                       IsChecked="True" />
             <TextBlock Text="Resolution:" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Top"
-                       Margin="10,255,0,0" Width="80" Foreground="#FFBFBFBF" TextAlignment="Left" />
+                       Margin="10,280,0,0" Width="80" Foreground="#FFBFBFBF" TextAlignment="Left" />
             <TextBox x:Name="My_T_ParseX" Grid.Column="0" HorizontalAlignment="Left" Height="25" TextWrapping="Wrap"
-                     VerticalAlignment="Top" Width="50" Margin="95,250,0,0" Background="#7F1D1D1D"
+                     VerticalAlignment="Top" Width="50" Margin="95,275,0,0" Background="#7F1D1D1D"
                      Foreground="#FFBFBFBF">
                 <TextBox.Style>
                     <Style TargetType="TextBox">
@@ -44,9 +48,9 @@
                 </TextBox.Style>
             </TextBox>
             <TextBlock Grid.Column="0" HorizontalAlignment="Left" TextWrapping="Wrap" Text="x" VerticalAlignment="Top"
-                       Margin="150,255,0,0" Width="15" Foreground="#FFBFBFBF" TextAlignment="Center" />
+                       Margin="150,280,0,0" Width="15" Foreground="#FFBFBFBF" TextAlignment="Center" />
             <TextBox x:Name="My_T_ParseY" Grid.Column="0" HorizontalAlignment="Left" Height="25" TextWrapping="Wrap"
-                     VerticalAlignment="Top" Width="50" Margin="170,250,0,0" Background="#7F1D1D1D"
+                     VerticalAlignment="Top" Width="50" Margin="170,275,0,0" Background="#7F1D1D1D"
                      Foreground="#FFBFBFBF">
                 <TextBox.Style>
                     <Style TargetType="TextBox">
@@ -61,19 +65,19 @@
             </TextBox>
             <Button x:Name="My_B_ReReslutation" Grid.Column="0" Content="Batch Convert Resolution"
                     HorizontalAlignment="Left" VerticalAlignment="Top" Width="200" Height="25" Background="#FF595959"
-                    Foreground="#FFBFBFBF" Margin="10,285,0,0" Click="My_B_ReReslutation_Click" />
+                    Foreground="#FFBFBFBF" Margin="10,310,0,0" Click="My_B_ReReslutation_Click" />
 
             <Button x:Name="My_B_Gray" Grid.Column="0" Content="Batch Convert to Grayscale" HorizontalAlignment="Left"
                     VerticalAlignment="Top" Width="200" Height="25" Background="#FF595959" Foreground="#FFBFBFBF"
-                    Margin="10,320,0,0" Click="My_B_Gray_Click" />
+                    Margin="10,345,0,0" Click="My_B_Gray_Click" />
             <TextBlock Grid.Column="0" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top"
-                       Margin="10,355,0,0" Width="100" Foreground="#FFBFBFBF" TextAlignment="Left"
+                       Margin="10,380,0,0" Width="100" Foreground="#FFBFBFBF" TextAlignment="Left"
                        Text="Blur Strength:" />
             <Slider x:Name="My_T_BlurSlider" Grid.Column="0" VerticalAlignment="Top" HorizontalAlignment="Left"
-                    Width="100" Margin="110,353,0,0" Minimum="1" Value="1" Foreground="Gray" Maximum="4" />
+                    Width="100" Margin="110,378,0,0" Minimum="1" Value="1" Foreground="Gray" Maximum="4" />
             <Button x:Name="My_B_Blur" Grid.Column="0" Content="Batch Blur (Slow)" HorizontalAlignment="Left"
                     VerticalAlignment="Top" Width="200" Height="25" Background="#FF595959" Foreground="#FFBFBFBF"
-                    Margin="10,385,0,0" Click="My_B_Blur_Click" Cursor="" />
+                    Margin="10,410,0,0" Click="My_B_Blur_Click" Cursor="" />
 
             <TextBlock Text="Output" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Top"
                        Margin="10,10,0,0" Foreground="#FFBFBFBF" FontSize="12" />
@@ -126,7 +130,7 @@
                     Margin="10,205,0,0" Cursor="" Click="My_B_Invert_Click" />
 
             <TextBlock Grid.ColumnSpan="2" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top"
-                       Margin="180,480,0,0" Width="80" Foreground="#FFBFBFBF" TextAlignment="Center"
+                       Margin="180,540,0,0" Width="80" Foreground="#FFBFBFBF" TextAlignment="Center"
                        Text=" -ZeroSkyline-" FontSize="10" />
         </Grid>
     </ScrollViewer>
