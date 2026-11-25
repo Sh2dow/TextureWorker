@@ -1,30 +1,24 @@
 # ![TW](icon.png) TextureWorker
 
 
-# ![TW](icon.ico) 软件界面：
+# ![TW](icon.ico) Software Interface:
   - ![TextureWorker](1.jpg)
 
   - ![TextureWorker](2.jpg)
 
   - ![TextureWorker](3.jpg)
 
-# ![TW](icon.ico) 介绍：
+# ![TW](icon.ico) Introduction:
 
-  1. 批量转换图片格式
+  1. Batch convert image formats
 
-  2. 批量转换图片分辨率
+  2. Batch convert image resolutions
 
-  3. 批量转换图片为灰度图
+  3. Batch convert images to grayscale
 
-  5. 批量模糊图片
+  5. Batch blur images
 
-  6. 批量反色 （支持选择通道）
+  6. Batch invert colors (supports channel selection)
 
-# ![TW](icon.ico) 下载：
-
-## [点我免费下载（适用于Window系统电脑）](https://github.com/PMZeroSkyline/WPF_TextureWorker/raw/main/TextureWorker/TextureWorker/bin/Release/TextureWorker.exe)
-
-### *本软件为一人开发 任何人都可以免费使用 没有广告 以开源 [点我下载我的其它免费应用](https://pmzeroskyline.github.io/FreeApps/)*
-
-由 [guzhang0@gamil.com](https://github.com/PMZeroSkyline) 提供支持 欢迎错误反馈
-
+### *This software is free for anyone to use, ad-free, and open-source.*
+```[cite: 1]
